@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/PolicyPage";
 
-export const metadata: Metadata = { title: "Refund Policy | Omugwo", description: "Refund and cancellation policy for Omugwo purchases and pre-orders." };
+export const metadata: Metadata = { title: "Refund Policy | Omugwo", description: "Our refund and cancellation policy for digital purchases and paperback pre-orders." };
 
 export default function RefundsPage() {
   return (

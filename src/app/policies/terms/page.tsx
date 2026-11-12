@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/PolicyPage";
 
-export const metadata: Metadata = { title: "Terms of Sale | Omugwo", description: "Terms governing purchases of Omugwo digital editions and paperback pre-orders." };
+export const metadata: Metadata = { title: "Terms of Sale | Omugwo", description: "Our terms governing digital-edition purchases and paperback pre-orders." };
 
 export default function TermsPage() {
   return (

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/PolicyPage";
 
-export const metadata: Metadata = { title: "Delivery and Pre-order Policy | Omugwo", description: "Digital fulfilment and paperback pre-order delivery information for Omugwo." };
+export const metadata: Metadata = { title: "Delivery and Pre-order Policy | Omugwo", description: "How we fulfil digital orders and manage paperback pre-order delivery." };
 
 export default function DeliveryPage() {
   return (

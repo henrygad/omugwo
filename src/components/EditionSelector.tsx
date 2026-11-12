@@ -434,7 +434,7 @@ export function EditionSelector({
             )}
             <p className="checkout-note">
               <Icon name="shield" />
-              Card details are entered only on Paystack. Omugwo never stores them.
+              Card details are entered only on Paystack. We never store them.
             </p>
           </aside>
         </div>}

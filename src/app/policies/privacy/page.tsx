@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/PolicyPage";
 
-export const metadata: Metadata = { title: "Privacy Policy | Omugwo", description: "How customer and reviewer information is used for the Omugwo sales page." };
+export const metadata: Metadata = { title: "Privacy Policy | Omugwo", description: "How we use customer and reviewer information on this book sales page." };
 
 export default function PrivacyPage() {
   return (
