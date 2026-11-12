@@ -348,11 +348,10 @@ export function EditionSelector({
 
                 <div className="form-field form-field--full">
                   <label htmlFor="delivery-address"><Icon name="map-pin" /> Street address</label>
-                  <textarea
+                  <input
                     id="delivery-address"
                     name="address"
                     autoComplete="street-address"
-                    rows={3}
                     value={fields.address}
                     onChange={(event) => updateField("address", event.target.value)}
                     onBlur={() =>

@@ -59,6 +59,7 @@ export function initializePaystackTransaction(input: {
       email: input.email,
       amount: String(input.amount),
       currency: "NGN",
+      channels: ["card", "bank_transfer"],
       reference: input.reference,
       callback_url: input.callbackUrl,
       metadata: JSON.stringify({ order_id: input.orderId }),

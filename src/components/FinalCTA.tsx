@@ -1,4 +1,5 @@
 import { PurchaseButton } from "./PurchaseButton";
+import { editions, formatPrice } from "@/config/site";
 
 export function FinalCTA() {
   return (
@@ -21,10 +22,10 @@ export function FinalCTA() {
         </p>
         <div className="final-actions">
           <PurchaseButton edition="digital" className="button button--ivory">
-            Get the Digital Copy — ₦1,999
+            Get the Digital Copy — {formatPrice(editions.digital.price)}
           </PurchaseButton>
           <PurchaseButton edition="paperback" className="button button--outline-light">
-            Pre-order Paperback — ₦4,999
+            Pre-order Paperback — {formatPrice(editions.paperback.price)}
           </PurchaseButton>
         </div>
       </div>

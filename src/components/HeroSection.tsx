@@ -1,6 +1,7 @@
 import { Book3D } from "./Book3D";
 import { PurchaseButton } from "./PurchaseButton";
 import { Icon } from "./Icon";
+import { editions, formatPrice } from "@/config/site";
 
 export function HeroSection() {
   return (
@@ -20,10 +21,10 @@ export function HeroSection() {
         </p>
         <div className="hero-actions">
           <PurchaseButton edition="digital" className="button button--primary">
-            Get the Digital Copy — ₦1,999
+            Get the Digital Copy — {formatPrice(editions.digital.price)}
           </PurchaseButton>
           <PurchaseButton edition="paperback" className="button button--secondary">
-            Pre-order Paperback — ₦4,999
+            Pre-order Paperback — {formatPrice(editions.paperback.price)}
           </PurchaseButton>
         </div>
         <div className="hero-assurances" aria-label="Purchase assurances">
