@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getAppCheckToken } from "@/lib/firebase/client";
 import type { PublicReview } from "@/types/commerce";
@@ -20,6 +20,16 @@ const emptyForm: ReviewForm = {
   comment: "",
 };
 
+const reviewPreviewLength = 210;
+
+function shortenReview(comment: string) {
+  if (comment.length <= reviewPreviewLength) return comment;
+
+  const preview = comment.slice(0, reviewPreviewLength);
+  const lastSpace = preview.lastIndexOf(" ");
+  return `${preview.slice(0, lastSpace > 150 ? lastSpace : reviewPreviewLength).trim()}…`;
+}
+
 export function ReaderReviews({
   showForm = true,
   showReviews = true,
@@ -31,6 +41,8 @@ export function ReaderReviews({
   const [form, setForm] = useState(emptyForm);
   const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!showReviews) return;
@@ -44,6 +56,24 @@ export function ReaderReviews({
       .catch(() => undefined);
     return () => controller.abort();
   }, [showReviews]);
+
+  function moveCarousel(direction: -1 | 1) {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    carousel.scrollBy({
+      left: direction * carousel.clientWidth,
+      behavior: "smooth",
+    });
+  }
+
+  function toggleReview(reviewId: string) {
+    setExpandedReviews((current) =>
+      current.includes(reviewId)
+        ? current.filter((id) => id !== reviewId)
+        : [...current, reviewId],
+    );
+  }
 
   async function submitReview(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -93,17 +123,60 @@ export function ReaderReviews({
         </div>
 
         {reviews.length > 0 && (
-          <div className="reader-reviews__list" aria-label="Approved reader reviews">
-            {reviews.slice(0, 6).map((review) => (
-              <article key={review.id}>
-                <p className="review-stars" aria-label={`${review.rating} out of 5 stars`}>
-                  {"★".repeat(review.rating)}
-                  <span aria-hidden="true">{"☆".repeat(5 - review.rating)}</span>
-                </p>
-                <blockquote>{review.comment}</blockquote>
-                <p>— {review.name}</p>
-              </article>
-            ))}
+          <div className="reader-reviews__carousel">
+            <div className="reader-reviews__carousel-heading">
+              <p>Swipe to explore more reader responses.</p>
+              {reviews.length > 1 && (
+                <div className="reader-reviews__controls" aria-label="Review carousel controls">
+                  <button type="button" onClick={() => moveCarousel(-1)} aria-label="Show previous reviews">
+                    <Icon name="arrow-left" />
+                  </button>
+                  <button type="button" onClick={() => moveCarousel(1)} aria-label="Show next reviews">
+                    <Icon name="arrow-right" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <div
+              ref={carouselRef}
+              className="reader-reviews__list"
+              aria-label="Approved reader reviews"
+              aria-roledescription="carousel"
+              role="region"
+              tabIndex={0}
+            >
+              {reviews.map((review, index) => {
+                const isExpanded = expandedReviews.includes(review.id);
+                const isLongReview = review.comment.length > reviewPreviewLength;
+
+                return (
+                  <article
+                    key={review.id}
+                    aria-label={`Review ${index + 1} of ${reviews.length}`}
+                    role="group"
+                  >
+                    <p className="review-stars" aria-label={`${review.rating} out of 5 stars`}>
+                      {"★".repeat(review.rating)}
+                      <span aria-hidden="true">{"☆".repeat(5 - review.rating)}</span>
+                    </p>
+                    <blockquote>
+                      <p>{isExpanded ? review.comment : shortenReview(review.comment)}</p>
+                    </blockquote>
+                    {isLongReview && (
+                      <button
+                        className="review-read-more"
+                        type="button"
+                        aria-expanded={isExpanded}
+                        onClick={() => toggleReview(review.id)}
+                      >
+                        {isExpanded ? "Show less" : "Read more"}
+                      </button>
+                    )}
+                    <p className="review-author">— {review.name}</p>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         )}
 

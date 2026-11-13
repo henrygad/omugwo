@@ -64,3 +64,13 @@ export const fulfillmentUpdateSchema = z.object({
 export const reviewModerationSchema = z.object({
   status: z.enum(["approved", "rejected"]),
 });
+
+export const complimentaryDeliverySchema = z.object({
+  name: trimmedText(2, 100),
+  email: z.string().trim().email().max(254),
+  note: z.string().trim().max(500).optional().default(""),
+});
+
+export const digitalDeliveryActionSchema = z.object({
+  action: z.enum(["send", "retry", "regenerate", "resend"]),
+});

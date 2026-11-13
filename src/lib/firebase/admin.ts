@@ -2,6 +2,7 @@ import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/a
 import { getAppCheck } from "firebase-admin/app-check";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
 function getAdminApp(): App {
   if (getApps().length > 0) return getApp();
@@ -16,6 +17,9 @@ function getAdminApp(): App {
 
   return initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
+    storageBucket:
+      process.env.FIREBASE_STORAGE_BUCKET ??
+      process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   });
 }
 
@@ -29,4 +33,12 @@ export function getAdminDb() {
 
 export function getAdminAppCheck() {
   return getAppCheck(getAdminApp());
+}
+
+export function getAdminStorage() {
+  const bucketName =
+    process.env.FIREBASE_STORAGE_BUCKET ??
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  if (!bucketName) throw new Error("Firebase Storage is not configured.");
+  return getStorage(getAdminApp()).bucket(bucketName);
 }

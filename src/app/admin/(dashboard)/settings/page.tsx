@@ -5,7 +5,18 @@ export default function SettingsPage() {
   const services = [
     ["Firebase client", Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)],
     ["Firebase Admin", Boolean(process.env.FIREBASE_ADMIN_PROJECT_ID)],
+    [
+      "Private EPUB storage",
+      Boolean(
+        process.env.FIREBASE_STORAGE_BUCKET ??
+          process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      ),
+    ],
     ["Paystack", Boolean(process.env.PAYSTACK_SECRET_KEY)],
+    [
+      "Order confirmation email",
+      Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+    ],
     ["App Check enforcement", process.env.FIREBASE_APP_CHECK_ENFORCED === "true"],
   ] as const;
   return (

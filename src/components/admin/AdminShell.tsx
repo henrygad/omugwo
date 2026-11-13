@@ -7,6 +7,7 @@ import { Icon, type IconName } from "@/components/Icon";
 const links: ReadonlyArray<readonly [string, string, IconName]> = [
   ["Overview", "/admin", "dashboard"],
   ["Orders", "/admin/orders", "orders"],
+  ["Digital Deliveries", "/admin/deliveries", "send"],
   ["Reviews", "/admin/reviews", "message"],
   ["Settings", "/admin/settings", "settings"],
 ];
