@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { getAppCheckToken } from "@/lib/firebase/client";
 import type { PublicReview } from "@/types/commerce";
 import { Icon } from "@/components/Icon";
@@ -107,6 +106,8 @@ export function ReaderReviews({
     }
   }
 
+  if (!showForm && reviews.length === 0) return null;
+
   return (
     <section className={`reader-reviews ${!showForm ? "reader-reviews--public" : ""}`} aria-labelledby="reader-reviews-title">
       <div className="section-shell reader-reviews__shell">
@@ -178,12 +179,6 @@ export function ReaderReviews({
               })}
             </div>
           </div>
-        )}
-
-        {!showForm && (
-          <Link className="button button--primary" href="/submit-review">
-            <Icon name="message" /> Submit your review
-          </Link>
         )}
 
         {showForm && <form className="reader-review-form" onSubmit={submitReview}>
