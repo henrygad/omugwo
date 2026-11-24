@@ -16,6 +16,18 @@ export const checkoutSchema = z
     state: z.string().trim().max(100).optional().default(""),
     city: z.string().trim().max(100).optional().default(""),
     address: z.string().trim().max(500).optional().default(""),
+    marketingConsent: z.boolean().default(false),
+    attribution: z
+      .object({
+        source: z.string().trim().max(120).optional(),
+        medium: z.string().trim().max(120).optional(),
+        campaign: z.string().trim().max(160).optional(),
+        content: z.string().trim().max(160).optional(),
+        term: z.string().trim().max(160).optional(),
+        referrer: z.string().trim().url().max(500).optional(),
+        landingPage: z.string().trim().max(500).optional(),
+      })
+      .optional(),
   })
   .superRefine((value, context) => {
     if (value.edition !== "paperback") return;
@@ -58,7 +70,19 @@ export const sessionSchema = z.object({
 });
 
 export const fulfillmentUpdateSchema = z.object({
-  status: z.enum(["unfulfilled", "processing", "fulfilled", "cancelled"]),
+  status: z.enum([
+    "unfulfilled",
+    "processing",
+    "fulfilled",
+    "preorder_received",
+    "printing",
+    "ready_for_dispatch",
+    "dispatched",
+    "delivered",
+    "cancelled",
+  ]),
+  trackingNumber: z.string().trim().max(120).optional().default(""),
+  note: z.string().trim().max(500).optional().default(""),
 });
 
 export const reviewModerationSchema = z.object({

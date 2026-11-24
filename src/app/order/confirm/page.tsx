@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { formatPrice } from "@/config/site";
 import { verifyAndApplyPayment } from "@/lib/orders";
 import { Icon } from "@/components/Icon";
+import { PurchaseSuccessActions } from "@/components/PurchaseSuccessActions";
 
 export const metadata: Metadata = {
   title: "Order confirmation | Omugwo",
@@ -75,6 +76,14 @@ export default async function OrderConfirmationPage({
             </Link>
           )}
         </div>
+        {paid && order && (
+          <PurchaseSuccessActions
+            orderId={order.id}
+            reference={order.paystackReference ?? ""}
+            editionName={order.editionName ?? "Omugwo"}
+            amount={Number(order.amount ?? 0)}
+          />
+        )}
       </section>
     </main>
   );

@@ -14,11 +14,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   });
   return (
     <>
-      <header className="admin-page-header"><div><p>Commerce</p><h1 className="icon-heading"><Icon name="orders" /> Orders</h1></div><span>{result.total} records{result.capped ? "+" : ""}</span></header>
+      <header className="admin-page-header"><div><p>Commerce</p><h1 className="icon-heading"><Icon name="orders" /> Orders</h1></div><div className="admin-header-actions"><span>{result.total} records{result.capped ? "+" : ""}</span><form action="/api/admin/orders/export" method="get"><button className="admin-export-button" type="submit"><Icon name="send" /> Export CSV</button></form></div></header>
       <form className="admin-filters">
         <label className="admin-filter-field"><span><Icon name="search" /> Search</span><input name="search" defaultValue={query.search} placeholder="Order, customer, or email" /></label>
         <label className="admin-filter-field"><span><Icon name="money" /> Payment</span><select name="payment" defaultValue={query.payment ?? ""}><option value="">All payments</option><option value="paid">Paid</option><option value="pending">Pending</option><option value="failed">Failed</option><option value="abandoned">Abandoned</option></select></label>
-        <label className="admin-filter-field"><span><Icon name="truck" /> Fulfilment</span><select name="fulfillment" defaultValue={query.fulfillment ?? ""}><option value="">All fulfilment</option><option value="unfulfilled">Unfulfilled</option><option value="processing">Processing</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option></select></label>
+        <label className="admin-filter-field"><span><Icon name="truck" /> Fulfilment</span><select name="fulfillment" defaultValue={query.fulfillment ?? ""}><option value="">All fulfilment</option><option value="unfulfilled">Unfulfilled</option><option value="processing">Processing</option><option value="fulfilled">Fulfilled</option><option value="preorder_received">Preorder received</option><option value="printing">Printing</option><option value="ready_for_dispatch">Ready for dispatch</option><option value="dispatched">Dispatched</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select></label>
         <label className="admin-filter-field"><span><Icon name="book" /> Edition</span><select name="edition" defaultValue={query.edition ?? ""}><option value="">All editions</option><option value="digital">Digital</option><option value="paperback">Paperback</option></select></label>
         <button><Icon name="filter" /> Filter</button>
       </form>

@@ -378,6 +378,7 @@ export async function sendDelivery(
       if (lock.orderId) {
         transaction.update(db.collection("orders").doc(lock.orderId), {
           fulfillmentStatus: "fulfilled",
+          fulfilledAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         });
       }

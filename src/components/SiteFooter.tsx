@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { Icon } from "@/components/Icon";
+import { WhatsAppSupport } from "@/components/WhatsAppSupport";
 
 export function SiteFooter() {
   return (
@@ -31,6 +32,14 @@ export function SiteFooter() {
           <a className="icon-label" href="tel:+2347081477330">
             <Icon name="phone" /> +234 708 147 7330
           </a>
+          <a
+            className="icon-label"
+            href="https://wa.me/2347081477330?text=Hello%2C%20I%20need%20help%20with%20my%20Omugwo%20order."
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="message" /> WhatsApp order help
+          </a>
           <Link href="/policies/terms">Terms of Sale</Link>
           <Link href="/policies/refunds">Refund Policy</Link>
           <Link href="/policies/delivery">Delivery &amp; Pre-order Policy</Link>
@@ -41,6 +50,7 @@ export function SiteFooter() {
         <p>© Omugwo: The Season Mother Came.</p>
         <p className="icon-label"><Icon name="shield" /> Secure hosted checkout powered by Paystack</p>
       </div>
+      <WhatsAppSupport />
     </footer>
   );
 }

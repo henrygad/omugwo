@@ -15,6 +15,8 @@ import type {
   ReviewView,
 } from "@/types/commerce";
 import type { EditionId } from "@/config/site";
+import { sendPreorderUpdateEmail } from "@/lib/email/preorder-update";
+import type { OrderAttribution, OrderCustomer } from "@/types/commerce";
 
 function isoDate(value: unknown) {
   return value instanceof Timestamp ? value.toDate().toISOString() : "";
@@ -48,9 +50,26 @@ function orderFromDocument(document: DocumentSnapshot): OrderView {
     ...(value.paymentChannel
       ? { paymentChannel: String(value.paymentChannel) }
       : {}),
+    marketingConsent: Boolean(value.marketingConsent),
+    ...(value.attribution
+      ? { attribution: value.attribution as OrderAttribution }
+      : {}),
+    ...(value.trackingNumber
+      ? { trackingNumber: String(value.trackingNumber) }
+      : {}),
+    ...(value.fulfillmentNote
+      ? { fulfillmentNote: String(value.fulfillmentNote) }
+      : {}),
     createdAt: isoDate(value.createdAt),
     updatedAt: isoDate(value.updatedAt),
     ...(value.paidAt ? { paidAt: isoDate(value.paidAt) } : {}),
+    ...(value.fulfilledAt ? { fulfilledAt: isoDate(value.fulfilledAt) } : {}),
+    ...(value.recoveryEmailSentAt
+      ? { recoveryEmailSentAt: isoDate(value.recoveryEmailSentAt) }
+      : {}),
+    ...(value.reviewRequestSentAt
+      ? { reviewRequestSentAt: isoDate(value.reviewRequestSentAt) }
+      : {}),
   };
 }
 
@@ -100,7 +119,7 @@ export async function getDashboardOverview() {
   const db = getAdminDb();
   const orders = db.collection("orders");
   const reviews = db.collection("reviews");
-  const [total, paid, pending, pendingReviews, sales, recentOrders] =
+  const [total, paid, pending, pendingReviews, sales, recentOrders, paidOrderData, awaitingDeliveries] =
     await Promise.all([
       orders.count().get(),
       orders.where("paymentStatus", "==", "paid").count().get(),
@@ -108,7 +127,56 @@ export async function getDashboardOverview() {
       reviews.where("status", "==", "pending").count().get(),
       getPaidSalesTotal(orders),
       orders.orderBy("createdAt", "desc").limit(6).get(),
+      orders.where("paymentStatus", "==", "paid").limit(500).get(),
+      db
+        .collection("digitalDeliveries")
+        .where("deliveryStatus", "==", "awaiting_approval")
+        .count()
+        .get(),
     ]);
+
+  const paidOrders = paidOrderData.docs.map(orderFromDocument);
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const lagosDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const todayKey = lagosDate.format(new Date(now));
+  const salesToday = paidOrders
+    .filter(
+      (order) =>
+        order.paidAt && lagosDate.format(new Date(order.paidAt)) === todayKey,
+    )
+    .reduce((sum, order) => sum + order.amount, 0);
+  const revenueSince = (days: number) =>
+    paidOrders
+      .filter((order) => order.paidAt && now - new Date(order.paidAt).getTime() <= days * day)
+      .reduce((sum, order) => sum + order.amount, 0);
+  const sourceMap = new Map<string, number>();
+  for (const order of paidOrders) {
+    let source = order.attribution?.source || "Direct / unknown";
+    if (!order.attribution?.source && order.attribution?.referrer) {
+      try {
+        source = new URL(order.attribution.referrer).hostname;
+      } catch {
+        source = "Referral";
+      }
+    }
+    sourceMap.set(source, (sourceMap.get(source) ?? 0) + 1);
+  }
+  const sources = [...sourceMap.entries()]
+    .map(([source, orderCount]) => ({ source, orders: orderCount }))
+    .sort((left, right) => right.orders - left.orders)
+    .slice(0, 5);
+  const paperbackPipeline = paidOrders
+    .filter((order) => order.edition === "paperback")
+    .reduce<Record<string, number>>((result, order) => {
+      result[order.fulfillmentStatus] = (result[order.fulfillmentStatus] ?? 0) + 1;
+      return result;
+    }, {});
 
   return {
     totalOrders: total.data().count,
@@ -116,6 +184,18 @@ export async function getDashboardOverview() {
     pendingPayments: pending.data().count,
     pendingReviews: pendingReviews.data().count,
     totalSales: sales,
+    salesToday,
+    salesSevenDays: revenueSince(7),
+    salesThirtyDays: revenueSince(30),
+    conversionRate: total.data().count
+      ? Math.round((paid.data().count / total.data().count) * 1000) / 10
+      : 0,
+    digitalSales: paidOrders.filter((order) => order.edition === "digital").length,
+    paperbackSales: paidOrders.filter((order) => order.edition === "paperback").length,
+    marketingSubscribers: paidOrders.filter((order) => order.marketingConsent).length,
+    awaitingDeliveries: awaitingDeliveries.data().count,
+    sources,
+    paperbackPipeline,
     recentOrders: recentOrders.docs.map(orderFromDocument),
   };
 }
@@ -183,14 +263,21 @@ export async function updateFulfillment(
   orderId: string,
   status: FulfillmentStatus,
   administratorId: string,
+  details: { trackingNumber?: string; note?: string } = {},
 ) {
   const db = getAdminDb();
-  await db.runTransaction(async (transaction) => {
+  const emailInput = await db.runTransaction(async (transaction) => {
     const order = db.collection("orders").doc(orderId);
     const snapshot = await transaction.get(order);
     if (!snapshot.exists) throw new Error("Order not found.");
+    const value = snapshot.data() ?? {};
     transaction.update(order, {
       fulfillmentStatus: status,
+      trackingNumber: details.trackingNumber ?? "",
+      fulfillmentNote: details.note ?? "",
+      ...(["fulfilled", "delivered"].includes(status)
+        ? { fulfilledAt: FieldValue.serverTimestamp() }
+        : {}),
       updatedAt: FieldValue.serverTimestamp(),
     });
     transaction.create(db.collection("auditLogs").doc(), {
@@ -200,7 +287,41 @@ export async function updateFulfillment(
       administratorId,
       createdAt: FieldValue.serverTimestamp(),
     });
+    if (value.edition !== "paperback" || value.fulfillmentStatus === status) {
+      return null;
+    }
+    return {
+      customer: value.customer as OrderCustomer,
+      reference: String(value.paystackReference),
+    };
   });
+
+  if (emailInput) {
+    try {
+      const messageId = await sendPreorderUpdateEmail({
+        orderId,
+        name: emailInput.customer.name ?? "Reader",
+        email: emailInput.customer.email,
+        reference: emailInput.reference,
+        status,
+        trackingNumber: details.trackingNumber,
+        note: details.note,
+      });
+      if (messageId) {
+        await db.collection("orders").doc(orderId).update({
+          preorderUpdateEmailStatus: "sent",
+          preorderUpdateEmailMessageId: messageId,
+          preorderUpdateEmailSentAt: FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (error) {
+      await db.collection("orders").doc(orderId).update({
+        preorderUpdateEmailStatus: "failed",
+        preorderUpdateEmailError:
+          error instanceof Error ? error.message.slice(0, 300) : "Unknown error",
+      });
+    }
+  }
 }
 
 export async function moderateReview(

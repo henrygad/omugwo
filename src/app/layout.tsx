@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Geist } from "next/font/google";
 import "./globals.css";
+import { AnalyticsConsent } from "@/components/AnalyticsConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +24,6 @@ const metadataBase = new URL(
 
 export const metadata: Metadata = {
   metadataBase,
-  alternates: { canonical: "/" },
   title: "Omugwo: The Season Mother Came | Buy the Novella",
   description:
     "A warm, funny, emotionally rich novella about mothers, daughters, new life, and the stories families carry across generations.",
@@ -58,6 +58,9 @@ export const metadata: Metadata = {
       "A mother comes to care. A family secret comes with her.",
     images: ["/books/Omugwo_KDP_Kindle_Cover.jpg"],
   },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export const viewport: Viewport = {
@@ -68,7 +71,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${cormorant.variable} antialiased`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AnalyticsConsent />
+      </body>
     </html>
   );
 }

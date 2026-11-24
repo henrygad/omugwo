@@ -5,6 +5,11 @@ export type FulfillmentStatus =
   | "unfulfilled"
   | "processing"
   | "fulfilled"
+  | "preorder_received"
+  | "printing"
+  | "ready_for_dispatch"
+  | "dispatched"
+  | "delivered"
   | "cancelled";
 export type ReviewStatus = "pending" | "approved" | "rejected";
 export type EpubGenerationStatus =
@@ -29,6 +34,16 @@ export type OrderCustomer = {
   address?: string;
 };
 
+export type OrderAttribution = {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+  term?: string;
+  referrer?: string;
+  landingPage?: string;
+};
+
 export type OrderRecord = {
   customer: OrderCustomer;
   edition: EditionId;
@@ -41,6 +56,10 @@ export type OrderRecord = {
   fulfillmentStatus: FulfillmentStatus;
   paystackTransactionId?: string;
   paymentChannel?: string;
+  marketingConsent?: boolean;
+  attribution?: OrderAttribution;
+  trackingNumber?: string;
+  fulfillmentNote?: string;
 };
 
 export type OrderView = OrderRecord & {
@@ -48,6 +67,9 @@ export type OrderView = OrderRecord & {
   createdAt: string;
   updatedAt: string;
   paidAt?: string;
+  fulfilledAt?: string;
+  recoveryEmailSentAt?: string;
+  reviewRequestSentAt?: string;
 };
 
 export type ReviewView = {

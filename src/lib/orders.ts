@@ -7,13 +7,19 @@ import {
   initializePaystackTransaction,
   verifyPaystackTransaction,
 } from "@/lib/paystack/client";
-import type { OrderCustomer, PaymentStatus } from "@/types/commerce";
+import type {
+  OrderAttribution,
+  OrderCustomer,
+  PaymentStatus,
+} from "@/types/commerce";
 import type { OrderView } from "@/types/commerce";
 
 export async function createPendingOrder(input: {
   edition: EditionId;
   customer: OrderCustomer;
   callbackUrl: string;
+  marketingConsent: boolean;
+  attribution?: OrderAttribution;
 }) {
   if (!process.env.PAYSTACK_SECRET_KEY) {
     throw new Error("Paystack is not configured.");
@@ -35,6 +41,9 @@ export async function createPendingOrder(input: {
     paystackReference: reference,
     paymentStatus: "pending",
     fulfillmentStatus: "unfulfilled",
+    marketingConsent: input.marketingConsent,
+    ...(input.marketingConsent ? { marketingConsentAt: now } : {}),
+    ...(input.attribution ? { attribution: input.attribution } : {}),
     termsVersion: "2026-11-11",
     termsAcceptedAt: now,
     createdAt: now,
@@ -82,7 +91,11 @@ export async function verifyAndApplyPayment(reference: string) {
     transaction.currency === order.currency;
 
   const unsuccessfulStatus: PaymentStatus =
-    transaction.status === "abandoned" ? "abandoned" : "failed";
+    transaction.status === "abandoned"
+      ? "abandoned"
+      : transaction.status === "failed" || transaction.status === "reversed"
+        ? "failed"
+        : "pending";
 
   const shouldSendConfirmation = await db.runTransaction(async (firestoreTransaction) => {
     const fresh = await firestoreTransaction.get(orderDocument.ref);
@@ -122,6 +135,10 @@ export async function verifyAndApplyPayment(reference: string) {
 
     firestoreTransaction.update(orderDocument.ref, {
       paymentStatus: "paid",
+      ...(freshOrder?.edition === "paperback" &&
+      freshOrder?.fulfillmentStatus === "unfulfilled"
+        ? { fulfillmentStatus: "preorder_received" }
+        : {}),
       paystackTransactionId: String(transaction.id),
       paymentChannel: transaction.channel ?? "unknown",
       paidAt: transaction.paid_at

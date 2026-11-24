@@ -18,6 +18,9 @@ export default function SettingsPage() {
       Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
     ],
     ["App Check enforcement", process.env.FIREBASE_APP_CHECK_ENFORCED === "true"],
+    ["Google Analytics", Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID)],
+    ["Google Search verification", Boolean(process.env.GOOGLE_SITE_VERIFICATION)],
+    ["Scheduled store emails", Boolean(process.env.CRON_SECRET)],
   ] as const;
   return (
     <>
@@ -26,6 +29,7 @@ export default function SettingsPage() {
         <section className="admin-panel"><h2 className="icon-heading"><Icon name="shield" /> Service status</h2><ul className="admin-settings-list">{services.map(([label, active]) => <li key={label}><span>{label}</span><strong className={`icon-label ${active ? "is-ready" : "is-missing"}`}><Icon name={active ? "check" : "x"} />{active ? "Configured" : "Not configured"}</strong></li>)}</ul><p className="admin-help">Secrets are intentionally never displayed or editable here.</p></section>
         <section className="admin-panel"><h2 className="icon-heading"><Icon name="money" /> Trusted edition pricing</h2><ul className="admin-settings-list">{Object.values(editions).map((edition) => <li key={edition.id}><span className="icon-label"><Icon name="book" />{edition.name}</span><strong>{formatPrice(edition.price)}</strong></li>)}</ul><p className="admin-help">Pricing is controlled in server-deployed configuration, not from the browser.</p></section>
       </div>
+      <section className="admin-panel admin-settings-guide"><h2 className="icon-heading"><Icon name="search" /> Public discovery</h2><p>Your sitemap is available at <a href="/sitemap.xml" target="_blank">/sitemap.xml</a> and crawler rules at <a href="/robots.txt" target="_blank">/robots.txt</a>. Add the production URL-prefix property in Google Search Console, then place its verification token in <code>GOOGLE_SITE_VERIFICATION</code>.</p></section>
     </>
   );
 }

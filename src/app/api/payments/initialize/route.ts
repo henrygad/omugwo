@@ -35,6 +35,8 @@ export async function POST(request: Request) {
         ...(input.address ? { address: input.address } : {}),
       },
       callbackUrl: paymentCallbackUrl(request),
+      marketingConsent: input.marketingConsent,
+      attribution: input.attribution,
     });
 
     return Response.json(result, { status: 201 });

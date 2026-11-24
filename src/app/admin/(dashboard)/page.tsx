@@ -8,9 +8,15 @@ export default async function AdminOverviewPage() {
   const cards: ReadonlyArray<readonly [string, string | number, IconName]> = [
     ["Total orders", overview.totalOrders, "orders"],
     ["Total sales", formatPrice(overview.totalSales), "money"],
+    ["Sales today", formatPrice(overview.salesToday), "money"],
+    ["Last 7 days", formatPrice(overview.salesSevenDays), "money"],
+    ["Last 30 days", formatPrice(overview.salesThirtyDays), "money"],
     ["Successful payments", overview.paidOrders, "check"],
+    ["Checkout conversion", `${overview.conversionRate}%`, "dashboard"],
     ["Pending payments", overview.pendingPayments, "clock"],
+    ["EPUBs awaiting approval", overview.awaitingDeliveries, "send"],
     ["Pending reviews", overview.pendingReviews, "message"],
+    ["Email subscribers", overview.marketingSubscribers, "mail"],
   ];
   return (
     <>
@@ -18,6 +24,23 @@ export default async function AdminOverviewPage() {
       <section className="admin-metrics">
         {cards.map(([label, value, icon]) => <article key={label}><span className="admin-metric-icon"><Icon name={icon} /></span><span>{label}</span><strong>{value}</strong></article>)}
       </section>
+      <div className="admin-detail-grid admin-insight-grid">
+        <section className="admin-panel">
+          <div className="admin-panel-heading"><h2 className="icon-heading"><Icon name="book" /> Edition sales</h2></div>
+          <dl className="admin-details">
+            <div><dt>Digital editions</dt><dd>{overview.digitalSales}</dd></div>
+            <div><dt>Paperback preorders</dt><dd>{overview.paperbackSales}</dd></div>
+          </dl>
+        </section>
+        <section className="admin-panel">
+          <div className="admin-panel-heading"><h2 className="icon-heading"><Icon name="filter" /> Top sales sources</h2></div>
+          {overview.sources.length ? <dl className="admin-details">{overview.sources.map((source) => <div key={source.source}><dt>{source.source}</dt><dd>{source.orders} order{source.orders === 1 ? "" : "s"}</dd></div>)}</dl> : <p className="admin-empty">Attribution will appear with new orders.</p>}
+        </section>
+        <section className="admin-panel">
+          <div className="admin-panel-heading"><h2 className="icon-heading"><Icon name="truck" /> Paperback pipeline</h2></div>
+          {Object.keys(overview.paperbackPipeline).length ? <dl className="admin-details">{Object.entries(overview.paperbackPipeline).map(([status, count]) => <div key={status}><dt>{status.replaceAll("_", " ")}</dt><dd>{count}</dd></div>)}</dl> : <p className="admin-empty">No paid paperback preorders yet.</p>}
+        </section>
+      </div>
       <section className="admin-panel">
         <div className="admin-panel-heading"><h2 className="icon-heading"><Icon name="clock" /> Recent orders</h2><Link className="icon-label" href="/admin/orders">View all <Icon name="arrow-right" /></Link></div>
         {overview.recentOrders.length === 0 ? <p className="admin-empty">No orders yet.</p> : (

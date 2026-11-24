@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   editions,
   formatPrice,
@@ -12,6 +12,7 @@ import {
 } from "@/config/site";
 import { getAppCheckToken } from "@/lib/firebase/client";
 import { Icon } from "@/components/Icon";
+import { readAttribution, trackEvent } from "@/lib/analytics";
 
 type FormFields = {
   name: string;
@@ -49,8 +50,19 @@ export function EditionSelector({
   const [checkoutNotice, setCheckoutNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const edition = editions[selected];
+
+  useEffect(() => {
+    if (!checkout) return;
+    trackEvent("begin_checkout", {
+      currency: edition.currency,
+      value: edition.price,
+      item_id: edition.id,
+      item_name: edition.name,
+    });
+  }, [checkout, edition]);
 
   const errors = useMemo(() => {
     const next: Partial<Record<FieldName, string>> = {};
@@ -74,6 +86,13 @@ export function EditionSelector({
   }, [fields, selected]);
 
   function selectEdition(id: EditionId) {
+    const selectedEdition = editions[id];
+    trackEvent("select_item", {
+      item_id: selectedEdition.id,
+      item_name: selectedEdition.name,
+      value: selectedEdition.price,
+      currency: selectedEdition.currency,
+    });
     if (!checkout) {
       router.push(`/checkout?edition=${id}`);
       return;
@@ -117,6 +136,11 @@ export function EditionSelector({
     setCheckoutNotice("Preparing your secure Paystack checkout…");
 
     try {
+      trackEvent("add_payment_info", {
+        currency: edition.currency,
+        value: edition.price,
+        item_id: edition.id,
+      });
       const appCheckToken = await getAppCheckToken();
       const response = await fetch("/api/payments/initialize", {
         method: "POST",
@@ -126,7 +150,13 @@ export function EditionSelector({
             ? { "X-Firebase-AppCheck": appCheckToken }
             : {}),
         },
-        body: JSON.stringify({ edition: selected, acceptedTerms, ...fields }),
+        body: JSON.stringify({
+          edition: selected,
+          acceptedTerms,
+          marketingConsent,
+          attribution: readAttribution(),
+          ...fields,
+        }),
       });
       const result = (await response.json()) as {
         authorizationUrl?: string;
@@ -380,6 +410,16 @@ export function EditionSelector({
               />
               <span>
                 I agree to the <Link href="/policies/terms" target="_blank">Terms of Sale</Link> and <Link href="/policies/refunds" target="_blank">Refund Policy</Link>.
+              </span>
+            </label>
+            <label className="checkout-consent form-field--full">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(event) => setMarketingConsent(event.target.checked)}
+              />
+              <span>
+                Email me occasional news about <em>Omugwo</em> and future books. This is optional, and I can unsubscribe at any time.
               </span>
             </label>
           </form>

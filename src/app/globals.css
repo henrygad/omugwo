@@ -2127,6 +2127,181 @@ h3 {
   }
 }
 
+/* Growth, support, and reporting additions */
+.analytics-consent {
+  position: fixed;
+  z-index: 120;
+  right: 1rem;
+  bottom: 1rem;
+  display: grid;
+  width: min(calc(100% - 2rem), 34rem);
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(255, 250, 242, 0.16);
+  border-radius: 18px;
+  background: rgba(36, 25, 22, 0.97);
+  box-shadow: 0 24px 70px rgba(20, 8, 10, 0.3);
+  color: var(--paper);
+}
+
+.analytics-consent p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.analytics-consent > div,
+.purchase-share > div,
+.admin-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.analytics-consent .button {
+  min-width: 0;
+  min-height: 2.8rem;
+}
+
+.analytics-consent .button--secondary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.whatsapp-support {
+  position: fixed;
+  z-index: 70;
+  right: 1rem;
+  bottom: 1rem;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: #216d45;
+  box-shadow: 0 12px 34px rgba(20, 55, 38, 0.25);
+  color: white;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.whatsapp-support:hover {
+  background: #185637;
+}
+
+.purchase-share {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.purchase-share h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+}
+
+.purchase-share p {
+  color: var(--muted);
+}
+
+.purchase-share .button {
+  min-width: 0;
+}
+
+.admin-header-actions {
+  justify-content: flex-end;
+}
+
+.admin-export-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wine);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.admin-insight-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.admin-fulfillment-control {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-select-field input {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+}
+
+.admin-settings-guide {
+  margin-top: 1.5rem;
+}
+
+.admin-settings-guide a {
+  color: var(--wine);
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .admin-insight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .whatsapp-support {
+    right: 0.75rem;
+    bottom: calc(5.45rem + env(safe-area-inset-bottom));
+    width: 3.15rem;
+    height: 3.15rem;
+    min-height: 0;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .whatsapp-support span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .analytics-consent {
+    right: 0.75rem;
+    bottom: calc(5.35rem + env(safe-area-inset-bottom));
+    width: calc(100% - 1.5rem);
+  }
+
+  .analytics-consent + .whatsapp-support,
+  body:has(.analytics-consent) .whatsapp-support {
+    display: none;
+  }
+
+  .purchase-share > div,
+  .purchase-share .button {
+    width: 100%;
+  }
+}
+
 /* Protected digital-delivery administration */
 .admin-tabs--wrap {
   flex-wrap: wrap;
