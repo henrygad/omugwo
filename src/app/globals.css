@@ -2260,9 +2260,109 @@ h3 {
   text-decoration: underline;
 }
 
+.admin-page-note {
+  max-width: 58rem;
+  margin: -0.5rem 0 1.5rem;
+  color: #765f55;
+  font-size: 0.9rem;
+}
+
+.admin-growth-links {
+  margin-bottom: 1.5rem;
+}
+
+.admin-growth-links > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.admin-growth-links a {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+}
+
+.admin-growth-links a > .ui-icon {
+  margin-top: 0.15rem;
+  color: var(--wine);
+}
+
+.admin-growth-links a span,
+.admin-growth-links a strong,
+.admin-growth-links a small {
+  display: block;
+}
+
+.admin-growth-links a small {
+  margin-top: 0.25rem;
+  color: #765f55;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.admin-metrics--compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.recovery-action {
+  display: grid;
+  min-width: 12rem;
+  gap: 0.45rem;
+}
+
+.recovery-action button {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.85rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--wine);
+  color: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.recovery-action button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.recovery-action p {
+  margin: 0;
+  color: #765f55;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.admin-recovery-detail {
+  margin-top: 1.5rem;
+}
+
+.admin-error {
+  color: #9a3444;
+}
+
+.admin-table-wrap code {
+  font-size: 0.8rem;
+}
+
 @media (max-width: 900px) {
   .admin-insight-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-growth-links > div:last-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2299,6 +2399,11 @@ h3 {
   .purchase-share > div,
   .purchase-share .button {
     width: 100%;
+  }
+
+  .admin-growth-links > div:last-child,
+  .admin-metrics--compact {
+    grid-template-columns: 1fr;
   }
 }
 

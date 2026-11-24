@@ -16,6 +16,8 @@ import type {
 } from "@/types/commerce";
 import type { EditionId } from "@/config/site";
 import { sendPreorderUpdateEmail } from "@/lib/email/preorder-update";
+import { sendPaymentRecoveryEmail } from "@/lib/email/payment-recovery";
+import { verifyAndApplyPayment } from "@/lib/orders";
 import type { OrderAttribution, OrderCustomer } from "@/types/commerce";
 
 function isoDate(value: unknown) {
@@ -66,6 +68,12 @@ function orderFromDocument(document: DocumentSnapshot): OrderView {
     ...(value.fulfilledAt ? { fulfilledAt: isoDate(value.fulfilledAt) } : {}),
     ...(value.recoveryEmailSentAt
       ? { recoveryEmailSentAt: isoDate(value.recoveryEmailSentAt) }
+      : {}),
+    ...(value.recoveryEmailStatus
+      ? { recoveryEmailStatus: String(value.recoveryEmailStatus) }
+      : {}),
+    ...(value.recoveryEmailError
+      ? { recoveryEmailError: String(value.recoveryEmailError) }
       : {}),
     ...(value.reviewRequestSentAt
       ? { reviewRequestSentAt: isoDate(value.reviewRequestSentAt) }
@@ -251,6 +259,107 @@ export async function listReviews(status?: string) {
     .get();
   const reviews = snapshot.docs.map(reviewFromDocument);
   return status ? reviews.filter((review) => review.status === status) : reviews;
+}
+
+export async function listPaymentRecoveryOrders() {
+  await connection();
+  const snapshot = await getAdminDb()
+    .collection("orders")
+    .orderBy("createdAt", "desc")
+    .limit(500)
+    .get();
+  return snapshot.docs
+    .map(orderFromDocument)
+    .filter((order) => order.paymentStatus !== "paid")
+    .slice(0, 200);
+}
+
+export async function sendManualPaymentRecovery(
+  orderId: string,
+  administratorId: string,
+  resend: boolean,
+) {
+  const db = getAdminDb();
+  const reference = db.collection("orders").doc(orderId);
+  const initial = await reference.get();
+  if (!initial.exists) throw new Error("Order not found.");
+  if (initial.get("paymentStatus") === "paid") {
+    return { sent: false, message: "This order is already paid." };
+  }
+
+  const verified = await verifyAndApplyPayment(String(initial.get("paystackReference")));
+  if (verified.paymentStatus === "paid") {
+    return {
+      sent: false,
+      message: "Paystack now confirms this payment as successful. No recovery email was sent.",
+    };
+  }
+  if (!['failed', 'abandoned'].includes(verified.paymentStatus)) {
+    return {
+      sent: false,
+      message: "This transaction is still pending. Wait for a final Paystack status before emailing the customer.",
+    };
+  }
+
+  const claimed = await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(reference);
+    const status = String(snapshot.get("recoveryEmailStatus") ?? "");
+    const claimTime = snapshot.get("recoveryEmailClaimedAt") as Timestamp | undefined;
+    const stale =
+      status === "sending" &&
+      claimTime instanceof Timestamp &&
+      Date.now() - claimTime.toMillis() > 30 * 60 * 1000;
+    if (status === "sending" && !stale) {
+      return { allowed: false, message: "A recovery email is already being sent." };
+    }
+    if (status === "sent" && !resend) {
+      return { allowed: false, message: "A recovery email was already sent. Choose resend if another email is necessary." };
+    }
+    transaction.update(reference, {
+      recoveryEmailStatus: "sending",
+      recoveryEmailClaimedAt: FieldValue.serverTimestamp(),
+      recoveryEmailInitiatedBy: administratorId,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    return { allowed: true, message: "" };
+  });
+  if (!claimed.allowed) return { sent: false, message: claimed.message };
+
+  const fresh = await reference.get();
+  const value = fresh.data() ?? {};
+  const customer = value.customer as OrderCustomer;
+  try {
+    const messageId = await sendPaymentRecoveryEmail({
+      orderId,
+      name: customer.name ?? "Reader",
+      email: customer.email,
+      edition: value.edition as EditionId,
+    });
+    await db.runTransaction(async (transaction) => {
+      transaction.update(reference, {
+        recoveryEmailStatus: "sent",
+        recoveryEmailSentAt: FieldValue.serverTimestamp(),
+        recoveryEmailMessageId: messageId,
+        recoveryEmailError: FieldValue.delete(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      transaction.create(db.collection("auditLogs").doc(), {
+        action: resend ? "payment_recovery.resent" : "payment_recovery.sent",
+        orderId,
+        administratorId,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    });
+    return { sent: true, message: `Recovery email sent to ${customer.email}.` };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown email error.";
+    await reference.update({
+      recoveryEmailStatus: "failed",
+      recoveryEmailError: message.slice(0, 300),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    throw error;
+  }
 }
 
 export async function getOrder(orderId: string) {

@@ -12,7 +12,11 @@ import {
 } from "@/config/site";
 import { getAppCheckToken } from "@/lib/firebase/client";
 import { Icon } from "@/components/Icon";
-import { readAttribution, trackEvent } from "@/lib/analytics";
+import {
+  readAttribution,
+  trackEvent,
+  trackEventAndWait,
+} from "@/lib/analytics";
 
 type FormFields = {
   name: string;
@@ -136,11 +140,6 @@ export function EditionSelector({
     setCheckoutNotice("Preparing your secure Paystack checkout…");
 
     try {
-      trackEvent("add_payment_info", {
-        currency: edition.currency,
-        value: edition.price,
-        item_id: edition.id,
-      });
       const appCheckToken = await getAppCheckToken();
       const response = await fetch("/api/payments/initialize", {
         method: "POST",
@@ -160,12 +159,21 @@ export function EditionSelector({
       });
       const result = (await response.json()) as {
         authorizationUrl?: string;
+        orderId?: string;
         error?: string;
       };
 
       if (!response.ok || !result.authorizationUrl) {
         throw new Error(result.error ?? "Checkout could not be started.");
       }
+
+      await trackEventAndWait("add_payment_info", {
+        currency: edition.currency,
+        value: edition.price,
+        item_id: edition.id,
+        item_name: edition.name,
+        order_id: result.orderId,
+      });
 
       const checkoutUrl = new URL(result.authorizationUrl);
       if (

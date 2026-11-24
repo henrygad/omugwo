@@ -2,7 +2,9 @@
 
 import Script from "next/script";
 import { useEffect, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { captureAttribution } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics";
 
 type Consent = "accepted" | "declined" | null;
 const consentKey = "omugwo_analytics_consent";
@@ -29,10 +31,17 @@ function subscribe(onChange: () => void) {
 export function AnalyticsConsent() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const consent = useSyncExternalStore(subscribe, readConsent, () => null);
+  const pathname = usePathname();
 
   useEffect(() => {
     captureAttribution();
   }, []);
+
+  useEffect(() => {
+    if (consent === "accepted") {
+      trackEvent("page_view", { page_path: pathname });
+    }
+  }, [consent, pathname]);
 
   function choose(next: Exclude<Consent, null>) {
     try {

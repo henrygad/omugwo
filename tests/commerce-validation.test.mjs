@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  analyticsEventSchema,
   checkoutSchema,
   fulfillmentUpdateSchema,
+  paymentRecoveryActionSchema,
 } from "../src/lib/validation.ts";
 
 test("accepts optional marketing consent and campaign attribution", () => {
@@ -50,5 +52,25 @@ test("accepts paperback printing and dispatch details", () => {
 
   assert.equal(result.status, "dispatched");
   assert.equal(result.trackingNumber, "DSP-12345");
+});
+
+test("accepts anonymous visitor events and removes unexpected identity fields", () => {
+  const result = analyticsEventSchema.parse({
+    visitorId: "550e8400-e29b-41d4-a716-446655440000",
+    sessionId: "6ba7b810-9dad-41d1-80b4-00c04fd430c8",
+    event: "page_view",
+    path: "/",
+    source: "instagram",
+    device: "mobile",
+    email: "must-not-be-stored@example.com",
+  });
+
+  assert.equal(result.visitorId, "550e8400-e29b-41d4-a716-446655440000");
+  assert.equal("email" in result, false);
+});
+
+test("requires an explicit choice before resending a recovery email", () => {
+  assert.equal(paymentRecoveryActionSchema.parse({}).resend, false);
+  assert.equal(paymentRecoveryActionSchema.parse({ resend: true }).resend, true);
 });
 

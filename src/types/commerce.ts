@@ -69,7 +69,39 @@ export type OrderView = OrderRecord & {
   paidAt?: string;
   fulfilledAt?: string;
   recoveryEmailSentAt?: string;
+  recoveryEmailStatus?: string;
+  recoveryEmailError?: string;
   reviewRequestSentAt?: string;
+};
+
+export type VisitorView = {
+  id: string;
+  sessionCount: number;
+  pageViews: number;
+  eventCount: number;
+  source: string;
+  medium?: string;
+  campaign?: string;
+  device: "mobile" | "tablet" | "desktop";
+  lastPath: string;
+  linkedOrderId?: string;
+  convertedOrderId?: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+};
+
+export type AnalyticsEventView = {
+  id: string;
+  visitorId: string;
+  event: string;
+  path: string;
+  source: string;
+  device: string;
+  edition?: string;
+  method?: string;
+  value?: number;
+  orderId?: string;
+  createdAt: string;
 };
 
 export type ReviewView = {

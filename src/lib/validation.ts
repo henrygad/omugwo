@@ -98,3 +98,29 @@ export const complimentaryDeliverySchema = z.object({
 export const digitalDeliveryActionSchema = z.object({
   action: z.enum(["send", "retry", "regenerate", "resend"]),
 });
+
+export const analyticsEventSchema = z.object({
+  visitorId: z.string().uuid(),
+  sessionId: z.string().uuid(),
+  event: z.enum([
+    "page_view",
+    "select_item",
+    "begin_checkout",
+    "add_payment_info",
+    "purchase",
+    "share",
+  ]),
+  path: z.string().trim().startsWith("/").max(500),
+  source: z.string().trim().max(120).optional(),
+  medium: z.string().trim().max(120).optional(),
+  campaign: z.string().trim().max(160).optional(),
+  device: z.enum(["mobile", "tablet", "desktop"]),
+  edition: z.string().trim().max(100).optional(),
+  method: z.string().trim().max(80).optional(),
+  value: z.number().finite().min(0).max(10_000_000).optional(),
+  orderId: z.string().trim().max(128).optional(),
+});
+
+export const paymentRecoveryActionSchema = z.object({
+  resend: z.boolean().default(false),
+});

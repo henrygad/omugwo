@@ -118,10 +118,15 @@ async function claimEmail(
   field: "recoveryEmailStatus" | "reviewRequestStatus",
 ) {
   const db = getAdminDb();
+  const claimField =
+    field === "recoveryEmailStatus"
+      ? "recoveryEmailClaimedAt"
+      : "reviewRequestClaimedAt";
   return db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(reference);
     const status = String(snapshot.get(field) ?? "");
-    const claimedAt = snapshot.get(`${field}ClaimedAt`) as Timestamp | undefined;
+    const claimedAt = (snapshot.get(claimField) ??
+      snapshot.get(`${field}ClaimedAt`)) as Timestamp | undefined;
     const staleClaim =
       status === "sending" &&
       claimedAt instanceof Timestamp &&
@@ -129,7 +134,7 @@ async function claimEmail(
     if (status === "sent" || (status === "sending" && !staleClaim)) return false;
     transaction.update(reference, {
       [field]: "sending",
-      [`${field}ClaimedAt`]: FieldValue.serverTimestamp(),
+      [claimField]: FieldValue.serverTimestamp(),
     });
     return true;
   });

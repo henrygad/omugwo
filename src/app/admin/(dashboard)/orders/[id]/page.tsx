@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FulfillmentControl } from "@/components/admin/AdminActions";
+import { PaymentRecoveryAction } from "@/components/admin/PaymentRecoveryAction";
 import { formatPrice } from "@/config/site";
 import { getOrder } from "@/lib/admin-data";
 
@@ -15,6 +16,26 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <section className="admin-panel"><h2>Order details</h2><dl className="admin-details"><div><dt>Edition</dt><dd>{order.editionName}</dd></div><div><dt>Amount</dt><dd>{formatPrice(order.amount)}</dd></div><div><dt>Payment</dt><dd>{order.paymentStatus}</dd></div><div><dt>Paystack transaction</dt><dd>{order.paystackTransactionId ?? "Not verified"}</dd></div><div><dt>Fulfilment</dt><dd><FulfillmentControl orderId={order.id} current={order.fulfillmentStatus} edition={order.edition} currentTracking={order.trackingNumber} currentNote={order.fulfillmentNote} /></dd></div>{order.edition === "digital" && order.paymentStatus === "paid" && <div><dt>Digital copy</dt><dd><Link href={`/admin/deliveries/${order.id}`}>Open delivery record</Link></dd></div>}</dl><h3>Marketing and attribution</h3><dl className="admin-details"><div><dt>Email updates</dt><dd>{order.marketingConsent ? "Opted in" : "Not subscribed"}</dd></div><div><dt>Source</dt><dd>{order.attribution?.source ?? "Direct / unknown"}</dd></div><div><dt>Campaign</dt><dd>{order.attribution?.campaign ?? "—"}</dd></div><div><dt>Review request</dt><dd>{order.reviewRequestSentAt ? new Date(order.reviewRequestSentAt).toLocaleString("en-NG") : "Not sent"}</dd></div></dl></section>
         <section className="admin-panel"><h2>Customer</h2><dl className="admin-details"><div><dt>Name</dt><dd>{order.customer.name ?? "—"}</dd></div><div><dt>Email</dt><dd>{order.customer.email}</dd></div><div><dt>Phone</dt><dd>{order.customer.phone ?? "—"}</dd></div><div><dt>Country</dt><dd>{order.customer.country ?? "—"}</dd></div><div><dt>State</dt><dd>{order.customer.state ?? "—"}</dd></div><div><dt>City</dt><dd>{order.customer.city ?? "—"}</dd></div><div><dt>Street address</dt><dd>{order.customer.address ?? "Digital delivery"}</dd></div></dl></section>
       </div>
+      {order.paymentStatus !== "paid" && (
+        <section className="admin-panel admin-recovery-detail">
+          <div className="admin-panel-heading">
+            <h2>Payment recovery</h2>
+            <Link href="/admin/recovery">Open recovery queue</Link>
+          </div>
+          <p>Paystack is checked again before any email is sent. A successful or still-pending transaction will not receive a recovery email.</p>
+          {["failed", "abandoned"].includes(order.paymentStatus) ? (
+            <PaymentRecoveryAction
+              orderId={order.id}
+              customerEmail={order.customer.email}
+              alreadySent={order.recoveryEmailStatus === "sent"}
+            />
+          ) : (
+            <p className="admin-help">This payment is still pending and cannot receive a recovery email yet.</p>
+          )}
+          {order.recoveryEmailSentAt && <p className="admin-help">Last sent: {new Date(order.recoveryEmailSentAt).toLocaleString("en-NG")}</p>}
+          {order.recoveryEmailError && <p className="admin-error">Last email error: {order.recoveryEmailError}</p>}
+        </section>
+      )}
     </>
   );
 }
