@@ -5,7 +5,7 @@ export type IconName =
   | "credit-card" | "dashboard" | "eye" | "eye-off" | "filter"
   | "lock" | "log-in" | "log-out" | "mail" | "map-pin"
   | "message" | "money" | "orders" | "phone" | "refresh"
-  | "search" | "send" | "settings" | "shield" | "star"
+  | "search" | "send" | "settings" | "shield" | "star" | "trash"
   | "truck" | "user" | "x";
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "children"> & {
@@ -40,6 +40,7 @@ function IconPaths({ name }: { name: IconName }) {
     case "settings": return <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3A1.7 1.7 0 0 0 14 21v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14h-.2v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></>;
     case "shield": return <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></>;
     case "star": return <path d="m12 2 3 6 6.5 1-4.7 4.6 1.1 6.4-5.9-3.1L6.1 20l1.1-6.4L2.5 9 9 8Z"/>;
+    case "trash": return <><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></>;
     case "truck": return <><path d="M3 6h11v11H3ZM14 10h4l3 3v4h-7Z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></>;
     case "user": return <><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/></>;
     case "x": return <path d="m6 6 12 12M18 6 6 18"/>;

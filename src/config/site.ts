@@ -12,6 +12,16 @@ export type Edition = {
   features: readonly string[];
 };
 
+export type EditionPricing = Record<EditionId, number>;
+
+export const affiliatePricing = {
+  company: { digital: 5000, paperback: 10000 },
+  minimum: { digital: 2000, paperback: 5000 },
+  maximum: { digital: 5000, paperback: 10000 },
+  cookieDays: 30,
+  commissionHoldDays: 7,
+} as const;
+
 export const siteConfig = {
   title: "Omugwo: The Season Mother Came",
   shortTitle: "Omugwo",
@@ -48,8 +58,7 @@ export const editions: Record<EditionId, Edition> = {
     format: "digital",
     name: "Digital Edition",
     shortName: "Digital",
-    price: 2000,
-    comparisonPrice: 5000,
+    price: affiliatePricing.company.digital,
     currency: "NGN",
     description: "A reading edition delivered to the email address you provide.",
     features: [
@@ -63,8 +72,7 @@ export const editions: Record<EditionId, Edition> = {
     format: "paperback",
     name: "Paperback Pre-order",
     shortName: "Paperback Pre-order",
-    price: 5000,
-    comparisonPrice: 8000,
+    price: affiliatePricing.company.paperback,
     currency: "NGN",
     description: "Reserve a physical paperback from the forthcoming print run.",
     features: [

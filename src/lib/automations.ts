@@ -4,18 +4,34 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { sendPaymentRecoveryEmail } from "@/lib/email/payment-recovery";
 import { sendReviewRequestEmail } from "@/lib/email/review-request";
-import { verifyAndApplyPayment } from "@/lib/orders";
+import { resolvePaymentStatusForRecovery } from "@/lib/orders";
 import type { EditionId } from "@/config/site";
 import type { OrderCustomer } from "@/types/commerce";
 
 const hour = 60 * 60 * 1000;
 
 export async function runStoreAutomations(now = Date.now()) {
-  const [recoveries, reviewRequests] = await Promise.all([
+  const [recoveries, reviewRequests, affiliateCommissions] = await Promise.all([
     recoverIncompletePayments(now),
     requestReaderReviews(now),
+    releaseAffiliateCommissions(now),
   ]);
-  return { recoveries, reviewRequests };
+  return { recoveries, reviewRequests, affiliateCommissions };
+}
+
+async function releaseAffiliateCommissions(now: number) {
+  const db = getAdminDb();
+  const snapshot = await db.collection("affiliateCommissions").where("status", "==", "pending").limit(500).get();
+  const batch = db.batch();
+  let released = 0;
+  for (const document of snapshot.docs) {
+    const availableAt = document.get("availableAt") as Timestamp | undefined;
+    if (!availableAt || availableAt.toMillis() > now) continue;
+    batch.update(document.ref, { status: "available", updatedAt: FieldValue.serverTimestamp() });
+    released += 1;
+  }
+  if (released) await batch.commit();
+  return { checked: snapshot.size, released };
 }
 
 async function recoverIncompletePayments(now: number) {
@@ -35,8 +51,11 @@ async function recoverIncompletePayments(now: number) {
     if (value.recoveryEmailStatus === "sent") continue;
 
     try {
-      const order = await verifyAndApplyPayment(String(value.paystackReference));
-      if (order.paymentStatus !== "failed" && order.paymentStatus !== "abandoned") continue;
+      const paymentStatus = await resolvePaymentStatusForRecovery(
+        value.paystackReference,
+        String(value.paymentStatus) as "pending" | "failed" | "abandoned",
+      );
+      if (paymentStatus !== "failed" && paymentStatus !== "abandoned") continue;
 
       const claimed = await claimEmail(document.ref, "recoveryEmailStatus");
       if (!claimed) continue;

@@ -22,12 +22,13 @@ export function SiteFooter() {
             </Link>
           ))}
           <Link className="icon-label" href="/submit-review"><Icon name="message" /> Submit a review</Link>
+          <Link className="icon-label" href="/affiliate"><Icon name="money" /> Affiliate Programme</Link>
           <Link className="icon-label" href="/#top"><Icon name="arrow-right" className="icon-rotate-up" /> Back to top</Link>
         </div>
         <div className="footer-column">
           <h3>Contact &amp; policies</h3>
-          <a className="icon-label" href="mailto:Henrygad.orji@gmail.com">
-            <Icon name="mail" /> Henrygad.orji@gmail.com
+          <a className="icon-label" href="mailto:omugwobooks@gmail.com">
+            <Icon name="mail" /> omugwobooks@gmail.com
           </a>
           <a className="icon-label" href="tel:+2347081477330">
             <Icon name="phone" /> +234 708 147 7330
@@ -44,11 +45,12 @@ export function SiteFooter() {
           <Link href="/policies/refunds">Refund Policy</Link>
           <Link href="/policies/delivery">Delivery &amp; Pre-order Policy</Link>
           <Link href="/policies/privacy">Privacy Policy</Link>
+          <Link href="/policies/affiliate">Affiliate Terms</Link>
         </div>
       </div>
       <div className="footer-bottom">
         <p>© Omugwo: The Season Mother Came.</p>
-        <p className="icon-label"><Icon name="shield" /> Secure hosted checkout powered by Paystack</p>
+        <p className="icon-label"><Icon name="shield" /> Secure encrypted checkout</p>
       </div>
       <WhatsAppSupport />
     </footer>

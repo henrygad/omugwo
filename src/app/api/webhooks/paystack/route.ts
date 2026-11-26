@@ -1,11 +1,18 @@
 import { z } from "zod";
 import { verifyPaystackSignature } from "@/lib/paystack/signature";
-import { verifyAndApplyPayment } from "@/lib/orders";
+import { reverseAffiliateCommission, verifyAndApplyPayment } from "@/lib/orders";
 
 const webhookSchema = z.object({
   event: z.string(),
-  data: z.object({ reference: z.string() }).passthrough(),
+  data: z.record(z.string(), z.unknown()),
 });
+
+function eventReference(data: Record<string, unknown>) {
+  if (typeof data.reference === "string") return data.reference;
+  const transaction = data.transaction;
+  if (transaction && typeof transaction === "object" && "reference" in transaction && typeof transaction.reference === "string") return transaction.reference;
+  return null;
+}
 
 export async function POST(request: Request) {
   const rawBody = Buffer.from(await request.arrayBuffer());
@@ -23,8 +30,18 @@ export async function POST(request: Request) {
 
   try {
     const event = webhookSchema.parse(JSON.parse(rawBody.toString("utf8")));
-    if (event.event === "charge.success") {
-      await verifyAndApplyPayment(event.data.reference);
+    const reference = eventReference(event.data);
+    if (event.event === "charge.success" && reference) {
+      await verifyAndApplyPayment(reference);
+    }
+    if (event.event === "refund.processed" && reference) {
+      await reverseAffiliateCommission(reference, "Paystack reported a processed refund.");
+    }
+    if (event.event === "charge.dispute.resolve" && reference) {
+      const verified = await verifyAndApplyPayment(reference);
+      if (verified.paymentStatus === "reversed") {
+        await reverseAffiliateCommission(reference, `Paystack event: ${event.event}`);
+      }
     }
     return Response.json({ received: true });
   } catch (error) {

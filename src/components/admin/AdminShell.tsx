@@ -8,6 +8,8 @@ const links: ReadonlyArray<readonly [string, string, IconName]> = [
   ["Overview", "/admin", "dashboard"],
   ["Orders", "/admin/orders", "orders"],
   ["Analytics", "/admin/analytics", "eye"],
+  ["Affiliates", "/admin/affiliates", "user"],
+  ["Affiliate Payouts", "/admin/affiliate-payouts", "money"],
   ["Payment Recovery", "/admin/recovery", "refresh"],
   ["Digital Deliveries", "/admin/deliveries", "send"],
   ["Reviews", "/admin/reviews", "message"],

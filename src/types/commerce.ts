@@ -1,6 +1,6 @@
 import type { EditionId } from "@/config/site";
 
-export type PaymentStatus = "pending" | "paid" | "failed" | "abandoned";
+export type PaymentStatus = "pending" | "paid" | "failed" | "abandoned" | "reversed";
 export type FulfillmentStatus =
   | "unfulfilled"
   | "processing"
@@ -23,6 +23,12 @@ export type DigitalDeliveryStatus =
   | "sent"
   | "failed";
 export type DigitalFulfilmentType = "paid" | "complimentary";
+export type AffiliateStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended";
+export type CommissionStatus = "pending" | "available" | "paid" | "reversed";
 
 export type OrderCustomer = {
   email: string;
@@ -44,6 +50,80 @@ export type OrderAttribution = {
   landingPage?: string;
 };
 
+export type SalesOffer = {
+  id: string;
+  code: string;
+  affiliateId?: string;
+  affiliateName?: string;
+  title: string;
+  digitalPrice: number;
+  paperbackPrice: number;
+  isCompany: boolean;
+};
+
+export type AffiliateAttribution = {
+  offerId: string;
+  offerCode: string;
+  affiliateId: string;
+  affiliateName: string;
+  offerTitle: string;
+  digitalPrice: number;
+  paperbackPrice: number;
+};
+
+export type AffiliateProfile = {
+  id: string;
+  email: string;
+  fullName: string;
+  publicName: string;
+  phone: string;
+  marketingDetails: string;
+  status: AffiliateStatus;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  negativeBalance?: number;
+  termsVersion?: string;
+  termsAcceptedAt?: string;
+  applicationEmailSentAt?: string;
+  applicationEmailError?: string;
+  statusEmailSentAt?: string;
+  statusEmailError?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AffiliateOffer = SalesOffer & {
+  active: boolean;
+  clicks: number;
+  checkouts: number;
+  paidSales: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AffiliateCommission = {
+  id: string;
+  orderId: string;
+  affiliateId: string;
+  affiliateName: string;
+  offerId: string;
+  edition: EditionId;
+  saleAmount: number;
+  companyBaseAmount: number;
+  affiliateGrossAmount: number;
+  paystackFee: number;
+  companyFeeShare: number;
+  affiliateFeeShare: number;
+  companyNetAmount: number;
+  affiliateNetAmount: number;
+  status: CommissionStatus;
+  paidAt?: string;
+  availableAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type OrderRecord = {
   customer: OrderCustomer;
   edition: EditionId;
@@ -58,6 +138,7 @@ export type OrderRecord = {
   paymentChannel?: string;
   marketingConsent?: boolean;
   attribution?: OrderAttribution;
+  affiliate?: AffiliateAttribution;
   trackingNumber?: string;
   fulfillmentNote?: string;
 };

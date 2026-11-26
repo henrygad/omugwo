@@ -4,6 +4,7 @@ import { EditionSelector } from "@/components/EditionSelector";
 import { Icon } from "@/components/Icon";
 import { SiteFooter } from "@/components/SiteFooter";
 import type { EditionId } from "@/config/site";
+import { getActiveSalesOffer } from "@/lib/affiliate/offers";
 
 export const metadata: Metadata = {
   title: "Secure checkout | Omugwo",
@@ -19,6 +20,7 @@ export default async function CheckoutPage({
 }) {
   const { edition } = await searchParams;
   const initialEdition: EditionId = edition === "paperback" ? "paperback" : "digital";
+  const offer = await getActiveSalesOffer();
 
   return (
     <>
@@ -35,7 +37,7 @@ export default async function CheckoutPage({
         </Link>
       </header>
       <main className="checkout-page-main">
-        <EditionSelector checkout initialEdition={initialEdition} />
+        <EditionSelector checkout initialEdition={initialEdition} offer={offer} />
       </main>
       <SiteFooter />
     </>

@@ -12,3 +12,9 @@ Approved artwork is stored in `public/books`.
 The crop boundaries match the 6 × 9 KDP wrap: 1838 px back, 75 px spine, and 1838 px front. No artwork was redrawn, recolored, or regenerated.
 
 Also provide a dedicated social-sharing crop (recommended 1200 × 630 px) and add its path to the Open Graph and Twitter metadata in `src/app/layout.tsx`.
+
+## Affiliate programme photography
+
+- `public/images/affiliate/omugwo-affiliate-bookstore-real.png` is based on Muhammad-Taha Ibrahim's [Nigerian bookstore portrait](https://www.pexels.com/photo/nigerian-woman-holding-book-at-bookstore-33837396/).
+- `public/images/affiliate/omugwo-affiliate-workspace-real.png` is based on Monstera Production's [woman using a phone at a desk](https://www.pexels.com/photo/woman-seated-beside-table-using-phone-9479822/).
+- Both source photographs are offered under the [Pexels licence](https://www.pexels.com/license/) and were edited only to present the approved Omugwo paperback in the scene.

@@ -10,6 +10,8 @@ import {
   siteConfig,
   type EditionId,
 } from "@/config/site";
+import { editionWithOffer } from "@/lib/affiliate/pricing";
+import type { SalesOffer } from "@/types/commerce";
 import { getAppCheckToken } from "@/lib/firebase/client";
 import { Icon } from "@/components/Icon";
 import {
@@ -43,9 +45,11 @@ const emptyFields: FormFields = {
 export function EditionSelector({
   checkout = false,
   initialEdition = "digital",
+  offer,
 }: {
   checkout?: boolean;
   initialEdition?: EditionId;
+  offer: SalesOffer;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<EditionId>(initialEdition);
@@ -56,7 +60,7 @@ export function EditionSelector({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
-  const edition = editions[selected];
+  const edition = editionWithOffer(offer, selected);
 
   useEffect(() => {
     if (!checkout) return;
@@ -90,7 +94,7 @@ export function EditionSelector({
   }, [fields, selected]);
 
   function selectEdition(id: EditionId) {
-    const selectedEdition = editions[id];
+    const selectedEdition = editionWithOffer(offer, id);
     trackEvent("select_item", {
       item_id: selectedEdition.id,
       item_name: selectedEdition.name,
@@ -137,7 +141,7 @@ export function EditionSelector({
     }
 
     setIsSubmitting(true);
-    setCheckoutNotice("Preparing your secure Paystack checkout…");
+    setCheckoutNotice("Preparing your secure checkout…");
 
     try {
       const appCheckToken = await getAppCheckToken();
@@ -151,6 +155,7 @@ export function EditionSelector({
         },
         body: JSON.stringify({
           edition: selected,
+          offerCode: offer.code,
           acceptedTerms,
           marketingConsent,
           attribution: readAttribution(),
@@ -203,14 +208,14 @@ export function EditionSelector({
           </div>
           <p>
             {checkout
-              ? "Confirm your edition, enter the delivery details, and continue to Paystack’s secure hosted checkout."
+              ? "Confirm your edition, enter the delivery details, and continue to our secure hosted checkout."
               : "No account is required. Choose your edition to continue to the secure purchase page."}
           </p>
         </div>
 
         <div className="edition-cards" role="list" aria-label="Book editions">
           {(Object.keys(editions) as EditionId[]).map((id) => {
-            const item = editions[id];
+            const item = editionWithOffer(offer, id);
             const isSelected = checkout && selected === id;
             return (
               <article
@@ -267,6 +272,7 @@ export function EditionSelector({
             <p className="form-privacy-note">
               We use these details only to process and fulfil your order.
             </p>
+            {!offer.isCompany && <p className="affiliate-checkout-referral"><Icon name="user" /> Referred by <strong>{offer.affiliateName}</strong> through “{offer.title}”.</p>}
 
             <div className="form-field">
               <label htmlFor="customer-name"><Icon name="user" /> Full name</label>
@@ -481,7 +487,7 @@ export function EditionSelector({
             )}
             <p className="checkout-note">
               <Icon name="shield" />
-              Card details are entered only on Paystack. We never store them.
+              Card details are entered only on the secure payment page. We never store them.
             </p>
           </aside>
         </div>}

@@ -4,6 +4,24 @@ type PaystackEnvelope<T> = {
   data: T;
 };
 
+export class PaystackRequestError extends Error {
+  readonly statusCode: number;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.name = "PaystackRequestError";
+    this.statusCode = statusCode;
+  }
+}
+
+export function isMissingPaystackTransaction(error: unknown) {
+  return (
+    error instanceof PaystackRequestError &&
+    error.statusCode === 404 &&
+    error.message.toLowerCase().includes("transaction reference not found")
+  );
+}
+
 export type PaystackTransaction = {
   id: number;
   status: string;
@@ -12,6 +30,7 @@ export type PaystackTransaction = {
   currency: string;
   channel?: string;
   paid_at?: string | null;
+  fees?: number | null;
   metadata?: { order_id?: string } | string | null;
 };
 
@@ -40,7 +59,10 @@ async function paystackRequest<T>(path: string, init?: RequestInit) {
   const payload = (await response.json()) as PaystackEnvelope<T>;
 
   if (!response.ok || !payload.status) {
-    throw new Error(payload.message || "Paystack request failed.");
+    throw new PaystackRequestError(
+      payload.message || "Paystack request failed.",
+      response.status,
+    );
   }
 
   return payload.data;

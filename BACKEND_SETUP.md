@@ -30,3 +30,17 @@ The script creates or updates that Firebase Authentication user, assigns the sec
 The payment callback is generated from the domain serving the checkout request. It uses `/order/confirm` on localhost, preview deployments, and the production domain automatically. Non-local checkout requests must use HTTPS.
 
 Orders are priced on the server from `src/config/site.ts`. A browser redirect never marks an order paid; the server re-verifies the reference, amount, currency, and Paystack status.
+# Affiliate authentication setup
+
+The affiliate portal reuses the existing Firebase project and server credentials. No new environment variable is required.
+
+In Firebase Console:
+
+1. Open **Authentication → Sign-in method**.
+2. Keep **Email/Password** enabled.
+3. Enable **Google**, select the project support email, and save.
+4. Open **Authentication → Settings → Authorized domains**.
+5. Add `omugwoseries.vercel.app` and any future custom production domain.
+
+Customers do not use Firebase Authentication. These providers are only for affiliate and administrator accounts.
+

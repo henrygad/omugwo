@@ -1,7 +1,11 @@
 import { PurchaseButton } from "./PurchaseButton";
-import { editions, formatPrice } from "@/config/site";
+import { formatPrice } from "@/config/site";
+import type { SalesOffer } from "@/types/commerce";
+import { editionWithOffer } from "@/lib/affiliate/pricing";
 
-export function FinalCTA() {
+export function FinalCTA({ offer }: { offer: SalesOffer }) {
+  const digital = editionWithOffer(offer, "digital");
+  const paperback = editionWithOffer(offer, "paperback");
   return (
     <section
       className="final-cta"
@@ -22,10 +26,10 @@ export function FinalCTA() {
         </p>
         <div className="final-actions">
           <PurchaseButton edition="digital" className="button button--ivory">
-            Get the Digital Copy — {formatPrice(editions.digital.price)}
+            Get the Digital Copy — {formatPrice(digital.price)}
           </PurchaseButton>
           <PurchaseButton edition="paperback" className="button button--outline-light">
-            Pre-order Paperback — {formatPrice(editions.paperback.price)}
+            Pre-order Paperback — {formatPrice(paperback.price)}
           </PurchaseButton>
         </div>
       </div>

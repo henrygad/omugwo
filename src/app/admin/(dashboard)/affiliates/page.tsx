@@ -1,0 +1,9 @@
+import Link from "next/link";
+import { AffiliateModerationAction } from "@/components/admin/AffiliateModerationAction";
+import { Icon } from "@/components/Icon";
+import { listAllAffiliates } from "@/lib/affiliate/admin";
+
+export default async function AdminAffiliatesPage() {
+  const affiliates = await listAllAffiliates();
+  return <><header className="admin-page-header"><div><p>Partnership network</p><h1 className="icon-heading"><Icon name="user" /> Affiliates</h1></div><span>{affiliates.length} applications</span></header><section className="admin-panel"><div className="admin-panel-heading"><h2>Applications and accounts</h2><p>Open a profile to review its complete details.</p></div>{affiliates.length === 0 ? <p className="admin-empty">No affiliate applications yet.</p> : <div className="admin-table-wrap"><table><thead><tr><th>Affiliate</th><th>Contact</th><th>Marketing plan</th><th>Bank</th><th>Status</th><th>Action</th></tr></thead><tbody>{affiliates.map((affiliate) => <tr key={affiliate.id}><td><Link className="admin-profile-link" href={`/admin/affiliates/${affiliate.id}`}><strong>{affiliate.publicName || affiliate.fullName}</strong></Link><small>{affiliate.fullName}</small></td><td>{affiliate.email}<small>{affiliate.phone}</small></td><td className="admin-long-cell">{affiliate.marketingDetails}</td><td>{affiliate.bankName ?? "Not added"}<small>{affiliate.accountNumber ? `•••• ${affiliate.accountNumber.slice(-4)}` : ""}</small></td><td><span className={`status status--${affiliate.status}`}>{affiliate.status}</span>{affiliate.negativeBalance ? <small>Debt: ₦{affiliate.negativeBalance.toLocaleString("en-NG")}</small> : null}</td><td><Link className="admin-view-link" href={`/admin/affiliates/${affiliate.id}`}>View profile</Link><AffiliateModerationAction affiliateId={affiliate.id} currentStatus={affiliate.status} /></td></tr>)}</tbody></table></div>}</section></>;
+}

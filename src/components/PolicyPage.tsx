@@ -24,11 +24,11 @@ export function PolicyPage({
         <article className="policy-card">
           <p className="section-index">{eyebrow}</p>
           <h1>{title}</h1>
-          <p className="policy-updated">Effective 11 November 2026</p>
+          <p className="policy-updated">Effective 26 November 2026</p>
           {children}
           <section>
             <h2>Contact</h2>
-            <p>Questions may be sent to <a href="mailto:Henrygad.orji@gmail.com">Henrygad.orji@gmail.com</a> or <a href="tel:+2347081477330">+234 708 147 7330</a>.</p>
+            <p>Questions may be sent to <a href="mailto:omugwobooks@gmail.com">omugwobooks@gmail.com</a> or <a href="tel:+2347081477330">+234 708 147 7330</a>.</p>
           </section>
         </article>
       </main>

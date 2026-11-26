@@ -44,7 +44,7 @@ function ownershipPage(input: EpubPersonalization) {
       <p><strong>${name}</strong><br />${email}<br />Order reference: ${reference}</p>
     </div>
     <p>This electronic edition is licensed only to the named recipient for personal, non-commercial reading. It must not be reproduced, uploaded, shared, distributed, sublicensed, sold, or resold except where applicable law expressly permits.</p>
-    <p>Copyright and rights enquiries: Henrygad.orji@gmail.com</p>
+    <p>Copyright and rights enquiries: omugwobooks@gmail.com</p>
   </body>
 </html>`;
 }

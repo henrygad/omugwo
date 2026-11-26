@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "admin:provision": "node --env-file=.env.local scripts/provision-admin.mjs",
+    "admin:update-email": "node --env-file=.env --env-file=.env.local scripts/update-admin-email.mjs",
     "epub:upload-master": "node --env-file=.env --env-file=.env.local scripts/upload-epub-master.mjs"
   },
   "dependencies": {

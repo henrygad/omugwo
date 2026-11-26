@@ -12,6 +12,10 @@ export function apiError(error: unknown) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  if (error instanceof Error && error.message === "Affiliate approval required.") {
+    return Response.json({ error: error.message }, { status: 403 });
+  }
+
   if (
     error instanceof Error &&
     (error.message.includes("configuration is incomplete") ||

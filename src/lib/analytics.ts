@@ -35,6 +35,13 @@ export async function trackEventAndWait(
 }
 
 function readAnalyticsConsent() {
+  const cookieConsent = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith("omugwo_analytics_consent="))
+    ?.split("=")[1];
+  if (cookieConsent === "accepted" || cookieConsent === "declined") {
+    return cookieConsent;
+  }
   try {
     return localStorage.getItem("omugwo_analytics_consent");
   } catch {

@@ -8,6 +8,7 @@ export const editionIdSchema = z.enum(["digital", "paperback"]);
 export const checkoutSchema = z
   .object({
     edition: editionIdSchema,
+    offerCode: z.string().trim().min(7).max(64).optional().default("company"),
     acceptedTerms: z.literal(true),
     email: z.string().trim().email().max(254),
     name: trimmedText(2, 100),
@@ -123,4 +124,50 @@ export const analyticsEventSchema = z.object({
 
 export const paymentRecoveryActionSchema = z.object({
   resend: z.boolean().default(false),
+});
+
+export const affiliateSessionSchema = sessionSchema;
+
+export const affiliateOnboardingSchema = z.object({
+  fullName: trimmedText(2, 100),
+  publicName: trimmedText(2, 80),
+  phone: trimmedText(5, 30),
+  marketingDetails: trimmedText(20, 1000),
+  acceptedTerms: z.literal(true),
+});
+
+export const affiliateBankSchema = z.object({
+  bankName: trimmedText(2, 100),
+  accountName: trimmedText(2, 120),
+  accountNumber: z.string().trim().regex(/^\d{10}$/, "Enter a 10-digit account number."),
+});
+
+export const affiliateProfileSettingsSchema = z.object({
+  publicName: trimmedText(2, 80),
+  phone: trimmedText(5, 30),
+  marketingDetails: trimmedText(20, 1000),
+});
+
+export const affiliateAccountClosureSchema = z.object({
+  confirmation: z.literal("DELETE"),
+});
+
+export const affiliateOfferSchema = z.object({
+  title: trimmedText(2, 80),
+  digitalPrice: z.coerce.number().int().min(2000).max(5000),
+  paperbackPrice: z.coerce.number().int().min(5000).max(10000),
+});
+
+export const affiliateOfferUpdateSchema = z.object({
+  active: z.boolean(),
+});
+
+export const affiliateModerationSchema = z.object({
+  status: z.enum(["approved", "rejected", "suspended"]),
+});
+
+export const affiliatePayoutSchema = z.object({
+  affiliateId: z.string().trim().min(1).max(128),
+  commissionIds: z.array(z.string().trim().min(1).max(128)).min(1).max(500),
+  paymentReference: trimmedText(2, 160),
 });

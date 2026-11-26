@@ -135,9 +135,13 @@ export function Book3D({
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
     const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+    const pointerStrength = Number.parseFloat(
+      event.currentTarget.style.getPropertyValue("--book-pointer-strength") ||
+        "1",
+    );
 
-    rotationYToRef.current(x * 155);
-    rotationXToRef.current(-y * 18);
+    rotationYToRef.current(x * 18 * pointerStrength);
+    rotationXToRef.current(-y * 8 * pointerStrength);
   }
 
   function handlePointerLeave() {
@@ -173,6 +177,7 @@ export function Book3D({
                 loading={eager ? "eager" : "lazy"}
                 fetchPriority={eager ? "high" : "auto"}
               />
+              <span className="book-light-sweep" />
             </div>
             <div className="book-cover-inside" />
           </div>

@@ -2,6 +2,7 @@ import { verifyAppCheckRequest } from "@/lib/firebase/app-check";
 import { apiError } from "@/lib/http";
 import { createPendingOrder } from "@/lib/orders";
 import { checkoutSchema } from "@/lib/validation";
+import { getActiveSalesOffer } from "@/lib/affiliate/offers";
 
 function paymentCallbackUrl(request: Request) {
   const origin = new URL(request.url);
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
   try {
     await verifyAppCheckRequest(request);
     const input = checkoutSchema.parse(await request.json());
+    const offer = await getActiveSalesOffer();
+    if (offer.code !== input.offerCode) {
+      return Response.json({ error: "The active offer changed. Refresh the page and confirm the current price before paying." }, { status: 409 });
+    }
     const result = await createPendingOrder({
       edition: input.edition,
       customer: {
@@ -37,6 +42,7 @@ export async function POST(request: Request) {
       callbackUrl: paymentCallbackUrl(request),
       marketingConsent: input.marketingConsent,
       attribution: input.attribution,
+      offer,
     });
 
     return Response.json(result, { status: 201 });

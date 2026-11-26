@@ -12,8 +12,10 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TypographyMotion } from "@/components/TypographyMotion";
 import { editions, siteConfig } from "@/config/site";
+import { getActiveSalesOffer } from "@/lib/affiliate/offers";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
+export const instant = false;
 
 const publicUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://omugwoseries.vercel.app";
@@ -39,7 +41,8 @@ const bookStructuredData = {
   })),
 };
 
-export default function Home() {
+export default async function Home() {
+  const offer = await getActiveSalesOffer();
   return (
     <>
       <script
@@ -52,16 +55,16 @@ export default function Home() {
       <main>
         <TypographyMotion />
         <PersistentBookScene />
-        <HeroSection />
+        <HeroSection offer={offer} />
         <SalesNarrative />
-        <EditionSelector />
+        <EditionSelector offer={offer} />
         <CreatorsSection />
         <FAQSection />
         <ReaderReviews showForm={false} />
-        <FinalCTA />
+        <FinalCTA offer={offer} />
       </main>
       <SiteFooter />
-      <MobilePurchaseBar />
+      <MobilePurchaseBar offer={offer} />
     </>
   );
 }

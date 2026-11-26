@@ -17,8 +17,8 @@ import type {
 import type { EditionId } from "@/config/site";
 import { sendPreorderUpdateEmail } from "@/lib/email/preorder-update";
 import { sendPaymentRecoveryEmail } from "@/lib/email/payment-recovery";
-import { verifyAndApplyPayment } from "@/lib/orders";
-import type { OrderAttribution, OrderCustomer } from "@/types/commerce";
+import { resolvePaymentStatusForRecovery } from "@/lib/orders";
+import type { AffiliateAttribution, OrderAttribution, OrderCustomer } from "@/types/commerce";
 
 function isoDate(value: unknown) {
   return value instanceof Timestamp ? value.toDate().toISOString() : "";
@@ -55,6 +55,9 @@ function orderFromDocument(document: DocumentSnapshot): OrderView {
     marketingConsent: Boolean(value.marketingConsent),
     ...(value.attribution
       ? { attribution: value.attribution as OrderAttribution }
+      : {}),
+    ...(value.affiliate
+      ? { affiliate: value.affiliate as AffiliateAttribution }
       : {}),
     ...(value.trackingNumber
       ? { trackingNumber: String(value.trackingNumber) }
@@ -287,14 +290,18 @@ export async function sendManualPaymentRecovery(
     return { sent: false, message: "This order is already paid." };
   }
 
-  const verified = await verifyAndApplyPayment(String(initial.get("paystackReference")));
-  if (verified.paymentStatus === "paid") {
+  const storedStatus = String(initial.get("paymentStatus")) as PaymentStatus;
+  const paymentStatus = await resolvePaymentStatusForRecovery(
+    initial.get("paystackReference"),
+    storedStatus,
+  );
+  if (paymentStatus === "paid") {
     return {
       sent: false,
       message: "Paystack now confirms this payment as successful. No recovery email was sent.",
     };
   }
-  if (!['failed', 'abandoned'].includes(verified.paymentStatus)) {
+  if (paymentStatus !== "failed" && paymentStatus !== "abandoned") {
     return {
       sent: false,
       message: "This transaction is still pending. Wait for a final Paystack status before emailing the customer.",
